@@ -4,3 +4,9 @@ openlms_users.invite:
   route_name: openlms_users.invite
   weight: 10
   menu_name: main
+openlms_users.addtogroup:
+  title: 'Join Group'
+  description: 'Join group using invitation code'
+  route_name: openlms_users.join
+  weight: 10
+  menu_name: main

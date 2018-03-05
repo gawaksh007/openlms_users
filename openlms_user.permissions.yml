@@ -1,0 +1,4 @@
+administer field permissions:
+  title: 'Administer field permissions'
+  description: 'Manage field permissions and field permissions settings.'
+  restrict access: TRUE

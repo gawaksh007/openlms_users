@@ -1,7 +1,14 @@
 openlms_users.invite:
-  path: '/users'
+  path: '/group/add'
   defaults:
     _form: '\Drupal\openlms_users\Form\UsersForm'
+    _title: 'You can share group invites through the help of this module'
+  requirements:
+    _permission: 'access content'
+openlms_users.join:
+  path: '/group/join'
+  defaults:
+    _form: '\Drupal\openlms_users\Form\JoinForm'
     _title: 'You can share group invites through the help of this module'
   requirements:
     _permission: 'access content'

@@ -79,23 +79,23 @@ class UsersForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $emails = $form_state->getValue('emails');
     $group_name = $form_state->getValue('group_name');
-   
+    
     $array = [];
     $array = explode("\n",$emails);
-     $mailManager = \Drupal::service('plugin.manager.mail');
- $module = 'openlms_users';
- $key = 'invitation';
- $to = \Drupal::currentUser()->getEmail();
- $params['message'] = "This is the Body of the mail".$group_name;
- $params['node_title'] = "Invitation to join the group";
- $langcode = \Drupal::currentUser()->getPreferredLangcode();
- $send = true;
- $result = $mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send);
- if ($result['result'] !== true) {
-   drupal_set_message(t('There was a problem sending your message and it was not sent.'), 'error');
+    $mailManager = \Drupal::service('plugin.manager.mail');
+    $module = 'openlms_users';
+    $key = 'Invitation';
+    $to = \Drupal::currentUser()->getEmail();
+    $params['message'] = "This is the Body of the mail".$group_name;
+    $params['node_title'] = "Invitation to join the group";
+    $langcode = \Drupal::currentUser()->getPreferredLangcode();
+    $send = true;
+    $result = $mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send);
+    if ($result['result'] !== true) {
+     drupal_set_message(t('There was a problem sending your message and it was not sent.'), 'error');
+   }
+   else {
+     drupal_set_message(t('Your message has been sent.'));
+   } 
  }
- else {
-   drupal_set_message(t('Your message has been sent.'));
- } 
-  }
 }
