@@ -1,0 +1,4 @@
+name: Open LMS Sign Up and Invitation Module
+type: module
+core: '8.x'
+description: 'A platform to share the group invites and user sign ups'
