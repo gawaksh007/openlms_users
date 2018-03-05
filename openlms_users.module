@@ -1,0 +1,76 @@
+<?php
+
+/**
+ * @file
+ * @ Module file for Openlms_users Module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function openlms_users_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.openlms_users':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('A platform to share the group invites and user sign ups') . '</p>';
+      $output .= '<h3>' . t('Usage') . '</h3>';
+      return $output;
+  }
+}
+function crypto_rand_secure($min, $max)
+{
+    $range = $max - $min;
+    if ($range < 1) return $min; // not so random...
+    $log = ceil(log($range, 2));
+    $bytes = (int) ($log / 8) + 1; // length in bytes
+    $bits = (int) $log + 1; // length in bits
+    $filter = (int) (1 << $bits) - 1; // set all lower bits to 1
+    do {
+        $rnd = hexdec(bin2hex(openssl_random_pseudo_bytes($bytes)));
+        $rnd = $rnd & $filter; // discard irrelevant bits
+    } while ($rnd > $range);
+    return $min + $rnd;
+}
+/**
+ * Implements hook_entity_presave().
+ */
+function openlms_users_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
+  if($entity->bundle() == 'group') {
+    if($enity->is_new){
+      $codeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      $codeAlphabet.= "0123456789";
+      $max = strlen($codeAlphabet); // edited
+      for ($i=0; $i < 16; $i++) {
+        $token .= $codeAlphabet[crypto_rand_secure(0, $max-1)];
+      }
+      $entity->set('field_invite_code',$token);
+    }
+    else {
+      //$token=$entity->get('field_invite_code')->getValue()[0]['value'];
+      $entity->set('field_invite_code',$token);
+    }     
+ }
+}
+/**
+ * Implements hook_mail for module_name.
+ */
+/**
+* Implements hook_mail().
+*/
+function openlms_users_mail($key, &$message, $params) {
+ $options = array(
+   'langcode' => $message['langcode'],
+ );
+ switch ($key) {
+   case 'invitation':
+     $message['from'] = \Drupal::config('system.site')->get('mail');
+     $message['subject'] = t('Invitation : @title', array('@title' => $params['node_title']), $options);
+     $message['body'][] = $params['message'];
+     break;
+ }
+}
+
+

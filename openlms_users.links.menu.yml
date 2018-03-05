@@ -1,6 +1,6 @@
-openlms_users.newpage:
+openlms_users.invite:
   title: 'Invite Users'
   description: 'Link to share invites'
-  route_name: openlms_users.content
+  route_name: openlms_users.invite
   weight: 10
   menu_name: main
