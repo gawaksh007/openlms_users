@@ -1,4 +1,4 @@
-administer field permissions:
-  title: 'Administer field permissions'
-  description: 'Manage field permissions and field permissions settings.'
-  restrict access: TRUE
+openlms users invite:
+  title: 'Invite members to group'
+  description: 'Authorization to invite members to the group'
+  restrict access: FALSE

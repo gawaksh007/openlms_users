@@ -15,11 +15,19 @@ function openlms_users_help($route_name, RouteMatchInterface $route_match) {
     case 'help.page.openlms_users':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('A platform to share the group invites and user sign ups') . '</p>';
+      $output .= '<p>' . t('Sign Up and Invitation Module
+This module allows the existing users to add new members to the group by sharing a unique code, it also helps the users to sign up by entering that code and in turn adding them to the particular group of wich the code has been shared.') . '</p>';
       $output .= '<h3>' . t('Usage') . '</h3>';
+      $output .= '1. While creating a group, existing members will be able to get an automatically generated 16 digit alphanumeric code as an invitation code.<br>
+2. They can add the members by adding line separated emails in the text box provided<br>
+3. Users can sign up through the help of invite code.<br>
+4. Already registered users can also join using invitation code in join group page.'; 
       return $output;
   }
 }
+/**
+ *  Generates the random code of length 16 
+ */
 function crypto_rand_secure($min, $max)
 {
     $range = $max - $min;
@@ -49,14 +57,30 @@ function openlms_users_entity_presave(Drupal\Core\Entity\EntityInterface $entity
       $entity->set('field_invite_code',$token);
     }
     else {
-      //$token=$entity->get('field_invite_code')->getValue()[0]['value'];
+      $token=$entity->get('field_invite_code')->getValue()[0]['value'];
       $entity->set('field_invite_code',$token);
     }     
  }
 }
-/**
- * Implements hook_mail for module_name.
- */
+function openlms_users_group_presave(Group $og_group) {
+  die();
+  if($entity->bundle() == 'group') {
+    if($enity->is_new){
+      $codeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      $codeAlphabet.= "0123456789";
+      $max = strlen($codeAlphabet); // edited
+      for ($i=0; $i < 16; $i++) {
+        $token .= $codeAlphabet[crypto_rand_secure(0, $max-1)];
+      }
+      $entity->set('field_invite_code',$token);
+    }
+    else {
+      $token=$entity->get('field_invite_code')->getValue()[0]['value'];
+      $entity->set('field_invite_code',$token);
+    }     
+ }
+}
+
 /**
 * Implements hook_mail().
 */
@@ -65,12 +89,33 @@ function openlms_users_mail($key, &$message, $params) {
    'langcode' => $message['langcode'],
  );
  switch ($key) {
-   case 'invitation':
+   case 'Invitation':
      $message['from'] = \Drupal::config('system.site')->get('mail');
      $message['subject'] = t('Invitation : @title', array('@title' => $params['node_title']), $options);
      $message['body'][] = $params['message'];
      break;
  }
 }
+/**
+* Implements hook_form_alter() for user registration.
+*/
 
+function openlms_users_form_user_register_form_alter(&$form, &$form_state, $form_id) {
+       $form['invite_code']['#type'] = 'textfield';
+       $form['invite_code']['#title'] = 'Group Invite Code';
+       $form['invite_code']['#size'] = 16;
+    }
+
+function openlms_users_form_user_register_form_validate(array &$form, FormStateInterface $form_state) {
+  $invite_code = $form_state->getValue('invite_code');
+    if(!strlen($invite_code) == 16){
+      $form_state->setErrorByName('Code length', $this->t('Please enter valid invitation code'));
+    }
+}
+/**
+ * Extra form submission handler for the user registration form.
+ */
+function openlms_users_form_user_register_form_submit(array &$form, FormStateInterface $form_state) {
+
+}
 

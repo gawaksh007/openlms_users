@@ -25,19 +25,17 @@ class UsersForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) 
-
-  {
+  public function buildForm(array $form, FormStateInterface $form_state){
+    // getting all the nodes of group content type
     $nids = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['type' => 'group']);
     $titles=array();
-    foreach ($nids as $key=>$value) {
-      $nodes=\Drupal\node\Entity\Node::load($key);
+    foreach ($nids as $key => $value) {
+      $nodes = \Drupal\node\Entity\Node::load($key);
       foreach ($nodes as $keys=>$values) {
-        $title=$nodes->get('title')->getValue()[0]['value'];
-        $invite_code=$nodes->get('field_invite_code')->getValue()[0]['value'];
+        $title = $nodes->get('title')->getValue()[0]['value'];
+        $invite_code = $nodes->get('field_invite_code')->getValue()[0]['value'];
       } 
       $titles[$invite_code]=$title;
-
     }
     $form['group_name'] = array(
       '#type' => 'select',
@@ -50,7 +48,6 @@ class UsersForm extends FormBase {
       '#required' => TRUE,  
 
       );
-
     $form['actions']['#type'] = 'actions';
     $form['actions']['submit'] = array(
       '#type' => 'submit',
@@ -63,10 +60,11 @@ class UsersForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+    // validation form input - checking for email values
     $emails = $form_state->getValue('emails');
-    $array = [];
-    $array = explode("\n",$emails);
-    foreach ($array as $email) {    
+    $emailids = [];
+    $emailids = explode("\n",$emails);
+    foreach ($emailids as $email) {    
       $email = trim($email);
       if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $form_state->setErrorByName('Email', $this->t('Please enter valid list of Email IDs.  "'.$email.'" is not in right format')); 
@@ -76,26 +74,30 @@ class UsersForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state){
+    //getting values from the form
     $emails = $form_state->getValue('emails');
     $group_name = $form_state->getValue('group_name');
-    
-    $array = [];
-    $array = explode("\n",$emails);
-    $mailManager = \Drupal::service('plugin.manager.mail');
-    $module = 'openlms_users';
-    $key = 'Invitation';
-    $to = \Drupal::currentUser()->getEmail();
-    $params['message'] = "This is the Body of the mail".$group_name;
-    $params['node_title'] = "Invitation to join the group";
-    $langcode = \Drupal::currentUser()->getPreferredLangcode();
-    $send = true;
-    $result = $mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send);
-    if ($result['result'] !== true) {
-     drupal_set_message(t('There was a problem sending your message and it was not sent.'), 'error');
-   }
-   else {
-     drupal_set_message(t('Your message has been sent.'));
-   } 
- }
+    $emailids = [];
+    $emailids = explode("\n",$emails);
+    // defining the mail content
+    foreach ($emailids as $email) {
+      $mailManager = \Drupal::service('plugin.manager.mail');
+      $module = 'openlms_users';
+      $key = 'Invitation';
+      $to = $email;
+      $params['message'] = "This is the Body of the mail".$group_name;
+      $params['node_title'] = "Invitation to join the group";
+      $langcode = \Drupal::currentUser()->getPreferredLangcode();
+      $send = true;
+      // mail function using smtp auth module
+      $result = $mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send);
+      if ($result['result'] !== true) {
+       drupal_set_message(t('There was a problem sending your message and it was not sent.'), 'error');
+      }
+      else {
+        drupal_set_message(t('Invitation has been sent.'));
+      } 
+    }
+  }
 }

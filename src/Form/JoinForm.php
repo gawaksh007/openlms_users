@@ -58,9 +58,38 @@ class JoinForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $invite_code = $form_state->getValue('invite_code');
-    print_r($invite_code);
-    die();
-
     
-}
+    // load the node with the same invite code as inserted in the form
+    $nodes = \Drupal::entityTypeManager()
+  ->getStorage('node')
+  ->loadByProperties(['field_invite_code' => $invite_code]);
+    
+    // get currently logged in user id 
+    $user = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
+    $uid= $user->get('uid')->value;
+
+    // getting members list of the group
+    foreach ($nodes as $key => $value) {
+      $nid=$key;
+      foreach ($value as $node => $values) {
+        if($node=="field_members")
+          $target_ids=$values->getValue();
+          foreach ($target_ids as $target_id) {
+            $member_ids[]=$target_id['target_id'];
+          }
+      }
+    }
+    // check if user is already enrolled in a group
+    if(in_array($uid, $member_ids))
+    {
+      drupal_set_message(t("You are already a member of the group."), 'error');
+    }
+    else {
+      $member_ids[]=$uid;
+      $node = Node::load($nid);
+      $node->field_members[] = ['target_id' => $uid];
+      $node->save();
+      drupal_set_message(t("Thank you for joining the group"));
+    }
+  }
 }
