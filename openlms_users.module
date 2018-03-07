@@ -47,7 +47,7 @@ function crypto_rand_secure($min, $max)
  */
 function openlms_users_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
   if($entity->bundle() == 'group') {
-    if($enity->is_new){
+    if($entity->is_new){
       $codeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       $codeAlphabet.= "0123456789";
       $max = strlen($codeAlphabet); // edited
@@ -62,23 +62,29 @@ function openlms_users_entity_presave(Drupal\Core\Entity\EntityInterface $entity
     }     
  }
 }
-function openlms_users_group_presave(Group $og_group) {
-  die();
-  if($entity->bundle() == 'group') {
-    if($enity->is_new){
+function openlms_users_group_presave(Drupal\group\Entity\GroupInterface $group) {
+
+  if($group->bundle() == 'classroom') {
+    print_r($group);
+    die();
+    if(!$group->get('field_invite_code')->getValue()[0]['value']){
       $codeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       $codeAlphabet.= "0123456789";
       $max = strlen($codeAlphabet); // edited
       for ($i=0; $i < 16; $i++) {
         $token .= $codeAlphabet[crypto_rand_secure(0, $max-1)];
       }
-      $entity->set('field_invite_code',$token);
+      $group->set('field_invite_code',$token);
+      
     }
     else {
-      $token=$entity->get('field_invite_code')->getValue()[0]['value'];
-      $entity->set('field_invite_code',$token);
+      $token=$group->get('field_invite_code')->getValue()[0]['value'];
+      $group->set('field_invite_code',$token);
     }     
  }
+ // print_r($group->bundle());
+ // die();
+
 }
 
 /**

@@ -14,6 +14,13 @@ use Drupal\Core\Cache\CacheableDependencyInterface;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\group\Access\GroupAccessResult;
+use Drupal\group\Plugin\GroupContentEnablerBase;
+use Drupal\group\Entity\GroupInterface;
+use Drupal\group\Entity\GroupContentInterface;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\group\Entity\Group;
 class UsersForm extends FormBase {
   /**
    * {@inheritdoc}
@@ -26,20 +33,18 @@ class UsersForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state){
-    // getting all the nodes of group content type
-    $nids = \Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['type' => 'group']);
-    $titles=array();
-    foreach ($nids as $key => $value) {
-      $nodes = \Drupal\node\Entity\Node::load($key);
-      foreach ($nodes as $keys=>$values) {
-        $title = $nodes->get('title')->getValue()[0]['value'];
-        $invite_code = $nodes->get('field_invite_code')->getValue()[0]['value'];
-      } 
-      $titles[$invite_code]=$title;
+    // Get all group ids
+    $query = \Drupal::service('entity.query')
+      ->get('group');
+    $entity_ids = $query->execute();
+    // get group name from group ids
+    foreach ($entity_ids as $key => $value) {
+      $group=Group::load($key);
+      $group_name[$key]=$group->get('label')->getValue()[0]['value'];
     }
     $form['group_name'] = array(
       '#type' => 'select',
-      '#options' => $titles,
+      '#options' => $group_name,
       '#title' => 'A dropdown menu for selecting groups.',
       );
     $form['emails'] = array(
@@ -77,7 +82,12 @@ class UsersForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state){
     //getting values from the form
     $emails = $form_state->getValue('emails');
-    $group_name = $form_state->getValue('group_name');
+    $group_id = $form_state->getValue('group_name');
+    
+    //get invite code from group id
+    $group=Group::load($group_id);
+    $invite_code=$group->get('field_invite_code')->getValue()[0]['value'];
+    
     $emailids = [];
     $emailids = explode("\n",$emails);
     // defining the mail content
@@ -86,7 +96,7 @@ class UsersForm extends FormBase {
       $module = 'openlms_users';
       $key = 'Invitation';
       $to = $email;
-      $params['message'] = "This is the Body of the mail".$group_name;
+      $params['message'] = "Dear Student, You have received an invitation to join the group. Please use the following invite code to join the group.\n The invite code is : ".$invite_code;
       $params['node_title'] = "Invitation to join the group";
       $langcode = \Drupal::currentUser()->getPreferredLangcode();
       $send = true;

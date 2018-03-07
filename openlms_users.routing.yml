@@ -1,5 +1,5 @@
 openlms_users.invite:
-  path: '/group/add'
+  path: '/group/invite'
   defaults:
     _form: '\Drupal\openlms_users\Form\UsersForm'
     _title: 'You can share group invites through the help of this module'
