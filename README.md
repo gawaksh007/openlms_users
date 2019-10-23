@@ -20,7 +20,7 @@ USAGE
 1. While creating a group, existing members will be able to get an automatically generated 16 digit alphanumeric code as an invitation code.
 2. They can add the members by adding line separated emails in the text box provided.
 3. Users can sign up through the help of invite code.
-4. Already registered users can also join using invitation code in join group page.
+4. Already registered users wont be able to join any further groups as the user ID is unique.
 
 =======================================================================================
 MAINTAINERS
